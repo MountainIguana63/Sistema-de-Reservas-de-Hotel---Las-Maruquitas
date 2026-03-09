@@ -116,7 +116,7 @@ public class ServicioHuesped {
 
             System.out.println("Nombre: " + h.getNombre());
             System.out.println("Cantidad de habitaciones reservadas: " + h.getHabitacionesReservadas().size());
-            System.out.println("---------------------------");
+           
 
         }
 
