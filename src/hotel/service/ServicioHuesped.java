@@ -11,115 +11,77 @@ import java.util.List;
 */
 public class ServicioHuesped {
 
-    // Lista donde se guardan todos los huéspedes registrados
-    private List<Huesped> ListaHuesped;
+    private List<Huesped> listaHuespedes;
 
-    /*
-     Inicializa la lista de huéspedes cuando se crea el servicio
-    */
     public ServicioHuesped() {
-        ListaHuesped = new ArrayList<>();
+        listaHuespedes = new ArrayList<>();
     }
 
-    /*
-     Método para registrar un nuevo huésped en el sistema
-     Recibe informacion del Huesped y lo agrega a la lista
-    */
-    public void RegistrarHuesped(Huesped huesped) {
-        ListaHuesped.add(huesped);
-        System.out.println("Huésped registrado correctamente");
+    // Método para inyectar datos desde el JSON y sincronizar IDs
+    public void setHuespedes(List<Huesped> huespedesCargados) {
+        this.listaHuespedes = huespedesCargados;
+
+        // Buscamos cuál fue el último ID usado para que el contador no se reinicie
+        int maxId = 0;
+        for (Huesped h : listaHuespedes) {
+            if (h.getId() > maxId) {
+                maxId = h.getId();
+            }
+        }
+        Huesped.setContadorId(maxId); // Sincronizamos el contador de la clase Modelo
     }
 
-    /*
-     Método para eliminar un huésped
-     Primero busca el huésped por su ID y antes de eliminarlo se valida que no tenga reservas activas
-    */
-    public void EliminarHuesped(int id) {
+    public List<Huesped> getHuespedes() {
+        return listaHuespedes;
+    }
 
-        Huesped HuespedEncontrado = null;
+    // HU-02: Registrar huésped validando DUI
+    public boolean registrarHuesped(Huesped huesped) {
+        // Validar que no exista alguien con el mismo DUI
+        for (Huesped h : listaHuespedes) {
+            if (h.getDui().equals(huesped.getDui())) {
+                System.out.println("Error: Ya existe un huésped registrado con el DUI " + huesped.getDui());
+                return false;
+            }
+        }
+        listaHuespedes.add(huesped);
+        System.out.println("¡Huésped " + huesped.getNombres() + " registrado correctamente con ID: " + huesped.getId() + "!");
+        return true;
+    }
 
-        // Se recorre la lista de huéspedes
-        for (Huesped h : ListaHuesped) {
-
-            // Si el ID coincide se encontró el huésped
-            if (h.getId() == id) {
-
-                // Validación para verificar si tiene reservas activas
+    public boolean eliminarHuesped(String dui) {
+        for (Huesped h : listaHuespedes) {
+            if (h.getDui().equals(dui)) {
+                // Validación: No se puede borrar si tiene reservas
                 if (!h.getHabitacionesReservadas().isEmpty()) {
-                    System.out.println("No se puede eliminar el huésped porque tiene reservas activas");
-                    return;
+                    System.out.println("Error: No se puede eliminar al huésped porque tiene historial de reservas.");
+                    return false;
                 }
-
-                HuespedEncontrado = h;
+                listaHuespedes.remove(h);
+                System.out.println("Huésped eliminado correctamente.");
+                return true;
             }
         }
-
-        // Si se encontró el huésped se elimina de la lista
-        if (HuespedEncontrado != null) {
-            ListaHuesped.remove(HuespedEncontrado);
-            System.out.println("Huésped eliminado correctamente");
-        } else {
-            System.out.println("Huésped no encontrado");
-        }
-
+        System.out.println("Error: Huésped no encontrado en el sistema.");
+        return false;
     }
 
-    /*
-     Método para mostrar a los huespedes registrados
-     con toda su información
-    */
-    public void MostrarHuespedes() {
-
-        for (Huesped h : ListaHuesped) {
-
-            System.out.println("ID: " + h.getId());
-            System.out.println("Nombre: " + h.getNombre());
-            System.out.println("Email: " + h.getEmail());
-            System.out.println("Teléfono: " + h.getTelefono());
-
+    // Método clave para el Main: Buscar un huésped por su documento
+    public Huesped buscarPorDui(String dui) {
+        for (Huesped h : listaHuespedes) {
+            if (h.getDui().equals(dui)) return h;
         }
-
+        return null;
     }
 
-    /*
-     Método para mostrar las habitaciones reservadas por un huésped
-    */
-    public void showHabitacionesReservadas(int id) {
-
-        for (Huesped h : ListaHuesped) {
-
-            if (h.getId() == id) {
-
-                System.out.println("Habitaciones reservadas por " + h.getNombre());
-
-                for (String habitacion : h.getHabitacionesReservadas()) {
-                    System.out.println("Habitación: " + habitacion);
-                }
-
-                return;
-            }
-
+    public void mostrarHuespedes() {
+        System.out.println("\n--- LISTA DE HUÉSPEDES ---");
+        if(listaHuespedes.isEmpty()){
+            System.out.println("No hay huéspedes registrados.");
+            return;
         }
-
-        System.out.println("Huésped no encontrado");
-
-    }
-
-    /*
-     Este método muestra la información del huésped
-     pero ocultando datos sensibles como el email y el teléfono
-     Esto simula una vista para clientes
-    */
-    public void showInfoHuesped() {
-
-        for (Huesped h : ListaHuesped) {
-
-            System.out.println("Nombre: " + h.getNombre());
-            System.out.println("Cantidad de habitaciones reservadas: " + h.getHabitacionesReservadas().size());
-           
-
+        for (Huesped h : listaHuespedes) {
+            System.out.println(h.toString());
         }
-
     }
-
 }

@@ -1,48 +1,72 @@
 package hotel.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Reserva {
-    //Estos son los datos que guardara nuestra ficha
     private int id;
-    private Huesped huesped;
+    private Huesped titular; // El que paga
+    private List<Huesped> acompanantes; // Lista de acompañantes por DUI
     private Habitacion habitacion;
-    private LocalDate fechaEntrada;
-    private LocalDate fechaSalida;
+    private LocalDateTime fechaEntrada;
+    private LocalDateTime fechaSalida;
     private double costoTotal;
     private EstadoReserva estado;
 
-    // Un contador para que cada reserva tenga un número diferente automaticamente
-    private static int contadorId= 1;
+    private static int contadorId = 1;
 
-    // Esto llenara la ficha
-    public Reserva(Huesped huesped, Habitacion habitacion, LocalDate entrada, LocalDate salida, double costo){
-        this.id= contadorId++;      // Le pone el numero actual y suma 1 para la siguiente
-        this.huesped = huesped;
+    public Reserva(Huesped titular, Habitacion habitacion, LocalDateTime entrada, LocalDateTime salida) {
+        this.id = contadorId++;
+        this.titular = titular;
+        this.acompanantes = new ArrayList<>();
         this.habitacion = habitacion;
         this.fechaEntrada = entrada;
         this.fechaSalida = salida;
-        this.costoTotal= costo;
-        this.estado= EstadoReserva.ACTIVA; // Por defecto empezara activa
+        this.estado = EstadoReserva.ACTIVA;
+        // El costo se calcula automáticamente al momento de crear la reserva
+        this.costoTotal = calcularCostoTotal();
     }
 
-    // Lo que nos permite leer los datos de la ficha ya que son private
+    // HU-05: El cálculo debe realizarse mediante métodos del modelo
+    public double calcularCostoTotal() {
+        long horas = ChronoUnit.HOURS.between(fechaEntrada, fechaSalida);
+        // Calculamos días (mínimo 1 día si la estancia es corta)
+        double dias = Math.max(1, Math.ceil(horas / 24.0));
+        return dias * habitacion.getPrecio();
+    }
+
+    // Método para agregar acompañantes validando la capacidad de la habitación
+    public boolean agregarAcompanante(Huesped acompanante) {
+        // El titular + acompañantes actuales + el nuevo no debe superar la capacidad
+        if ((1 + acompanantes.size() + 1) <= habitacion.getCapacidadPersonas()) {
+            acompanantes.add(acompanante);
+            return true;
+        }
+        return false; // Habitación llena
+    }
+
+    // Getters
     public int getId() { return id; }
-    public Huesped getHuesped() { return huesped; }
+    public Huesped getTitular() { return titular; }
+    public List<Huesped> getAcompanantes() { return acompanantes; }
     public Habitacion getHabitacion() { return habitacion; }
-    public LocalDate getFechaEntrada() { return fechaEntrada; }
-    public LocalDate getFechaSalida() { return fechaSalida; }
+    public LocalDateTime getFechaEntrada() { return fechaEntrada; }
+    public LocalDateTime getFechaSalida() { return fechaSalida; }
     public double getCostoTotal() { return costoTotal; }
     public EstadoReserva getEstado() { return estado; }
 
-    // para que podamos cambiar el estado (de ACTIVA a CANCELADA)
-    public void setEstado(EstadoReserva estado) {
-        this.estado = estado;
+    public void setEstado(EstadoReserva estado) { this.estado = estado; }
+
+    // Metodo para sincronizar el ID con el JSON
+    public static void setContadorId(int maxId) {
+        contadorId = maxId + 1;
     }
 
-    // Cuando se imprima la reserva se vera ordenado
     @Override
     public String toString() {
-        return "Reserva #" + id + " | " + huesped.getNombre() + " en Hab. " + habitacion.getNumero();
+        return "Reserva #" + id + " | Titular: " + titular.getNombres() +
+                " | Hab: " + habitacion.getNumero() + " | Total: $" + costoTotal;
     }
 }

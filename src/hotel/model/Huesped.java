@@ -11,24 +11,45 @@ public class Huesped {
 
     // Características del huésped, Se declaran private para proteger los datos
     private int id;
-    private String nombre;
+    private String nombres;
+    private String apellidos;
+    private String dui;
     private String email;
     private String telefono;
+
+    // Atributos nuevos para manejar menores de edad
+    private boolean esMenor;
+    private String duiResponsable;
 
     // Lista que guarda las habitaciones que el huésped ha reservado
     private List<String> HabitacionesReservadas;
 
-    /*
-     Constructor de la clase
-     Se usa cuando se crea un nuevo huésped
-    */
-    public Huesped(int id, String nombre, String email, String telefono) {
-        this.id = id;
-        this.nombre = nombre;
+    // Generador automático de IDs
+    private static int contadorId = 1;
+
+    // 1. Constructor para Huésped Mayor de Edad (Estándar)
+    public Huesped(String nombres, String apellidos, String dui, String email, String telefono) {
+        this.id = contadorId++;
+        this.nombres = nombres;
+        this.apellidos = apellidos;
+        this.dui = dui;
         this.email = email;
         this.telefono = telefono;
+        this.esMenor = false;
+        this.duiResponsable = "N/A"; // No aplica
+        this.HabitacionesReservadas = new ArrayList<>();
+    }
 
-        // Se inicializa la lista donde se guardarán las habitaciones reservadas
+    // 2. Constructor para Huésped Menor de Edad
+    public Huesped(String nombres, String apellidos, String dui, String duiResponsable) {
+        this.id = contadorId++;
+        this.nombres = nombres;
+        this.apellidos = apellidos;
+        this.dui = dui;
+        this.email = "No requerido (Menor)";
+        this.telefono = "No requerido (Menor)";
+        this.esMenor = true;
+        this.duiResponsable = duiResponsable;
         this.HabitacionesReservadas = new ArrayList<>();
     }
 
@@ -41,8 +62,16 @@ public class Huesped {
         return id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getNombres() {
+        return nombres;
+    }
+
+    public String getApellidos() {
+        return apellidos;
+    }
+
+    public String getDui() {
+        return dui;
     }
 
     public String getEmail() {
@@ -51,6 +80,14 @@ public class Huesped {
 
     public String getTelefono() {
         return telefono;
+    }
+
+    public boolean isEsMenor() {
+        return esMenor;
+    }
+
+    public String getDuiResponsable() {
+        return duiResponsable;
     }
 
     public List<String> getHabitacionesReservadas() {
@@ -63,6 +100,16 @@ public class Huesped {
     */
     public void addHabitacionesReservadas(String HabitacionNumero) {
         HabitacionesReservadas.add(HabitacionNumero);
+    }
+
+    // Método para sincronizar el contador de IDs al cargar el JSON
+    public static void setContadorId(int maxId) {
+        contadorId = maxId + 1;
+    }
+
+    @Override
+    public String toString() {
+        return "ID: " + id + " | " + nombres + " " + apellidos + " | DUI: " + dui;
     }
 
 }

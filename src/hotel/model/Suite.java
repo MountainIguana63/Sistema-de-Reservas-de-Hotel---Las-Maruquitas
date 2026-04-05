@@ -10,8 +10,8 @@ public class Suite extends Habitacion{ // Caracteristicas adicionales
     /*
     Constructor y usa super() para inicializar los atributos de Habitacion.
      */
-    public Suite(int numero, double precio, boolean disponible, boolean jacuzzi, boolean balcon, boolean minibar) {
-        super(numero, precio, disponible);
+    public Suite(int numero, double precio, boolean disponible, boolean jacuzzi, boolean balcon, boolean minibar, int capacidadPersonas) {
+        super(numero, precio, disponible, capacidadPersonas);
         this.jacuzzi = jacuzzi;
         this.balcon = balcon;
         this.minibar = minibar;

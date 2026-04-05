@@ -1,120 +1,127 @@
 package hotel.service;
 
 import hotel.model.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-// Esta clase gestiona las operaciones relacionadas al usuario
+import java.util.regex.Pattern;
 
 public class ServicioUser {
 
-    // Esta lista al almacena todos los usuarios registrados
-    private List<User> users = new ArrayList<>();
+    private List<User> users;
 
-    // Esto es para crear un nuevo usuario
-    public void register(String username, String password, String confirmPassword, boolean admin) {
-
-        // Esto es para verificar que las contraseñas coincidan
-        if (!password.equals(confirmPassword)) {
-            System.out.println("Las contraseñas no coinciden.");
-            return;
-        }
-
-        // Esto es para verificar que el usuario no exista anteriormente
-        for (User u : users) {
-            if (u.getUsername().equals(username)) {
-                System.out.println("El usuario ingresado ya existe.");
-                return;
-            }
-        }
-
-        // Crea un Admin o Client dependiendo el tipo de cuenta
-        if (admin) {
-            users.add(new Admin(username, password));
-        } else {
-            users.add(new Client(username, password));
-        }
-        System.out.println("El usuario se ha registrado correctamente.");
+    public ServicioUser() {
+        this.users = new ArrayList<>();
     }
 
-    // Esto es para iniciar sesión en la plataforma
+    // Método para inyectar los datos cuando se carguen del JSON
+    public void setUsers(List<User> usersCargados) {
+        this.users = usersCargados;
+        // Si el archivo JSON estaba vacío o no existía, creamos la cuenta maestra
+        if (this.users.isEmpty()) {
+            this.users.add(new SuperAdmin("admin", "poo2026"));
+        }
+    }
+
+    public List<User> getUsers() {
+        return users;
+    }
+
+    // ==========================================
+    // LÓGICA DE LOGIN (Bug corregido)
+    // ==========================================
     public User login(String username, String password) {
-
-        // Buscar usuario en la lista
         for (User u : users) {
-
             if (u.getUsername().equals(username)) {
-
-                // Verificar que la contraseña sea correcta
-                if (u.getUsername().equals(password)) {
-                    System.out.println("Se ha registrado correctamente.");
+                // Antes comparaba username con password, ¡ya está corregido!
+                if (u.getPassword().equals(password)) {
+                    u.setUltimoAcceso(LocalDateTime.now()); // Registramos a qué hora entró
                     return u;
                 } else {
-                    System.out.println("La contraseña es incorrecta.");
+                    System.out.println("❌ Error: Credenciales incorrectas.");
                     return null;
                 }
-
             }
         }
-
-        System.out.println("El usuario no se encuentra.");
+        System.out.println("Error: El usuario no existe.");
         return null;
     }
 
-    // Convertir usuario en admin
-    public void giveAdmin(String username) {
+    // ==========================================
+    // REGISTRO DE CUENTAS (Validaciones)
+    // ==========================================
+    // Tipo: 1 = SuperAdmin, 2 = Admin, 3 = Recepcionista
+    public boolean registrarUsuario(String username, String password, String confirmPassword, int tipo) {
 
-        for (int i = 0; i < users.size(); i++) {
-            User u = users.get(i);
+        // 1. Doble verificación de contraseña
+        if (!password.equals(confirmPassword)) {
+            System.out.println("❌ Error: Credenciales incorrectas.");
+            return false;
+        }
+
+        // 2. Validación de formato de usuario (Regex)
+        // Solo letras (incluye tildes y ñ), entre 1 y 10 caracteres
+        if (!Pattern.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ]{1,10}$", username)) {
+            System.out.println("Error: El usuario debe tener máximo 10 letras, sin espacios ni caracteres especiales.");
+            return false;
+        }
+
+        // 3. Verificar si ya existe
+        for (User u : users) {
             if (u.getUsername().equals(username)) {
-
-                // Reemplazar usuario por admin
-                users.set(i, new Admin(u.getUsername(),u.getPassword()));
-
-                System.out.println("El usuario ahora es administrador.");
-                return;
+                System.out.println("Error: El usuario ingresado ya existe en el sistema.");
+                return false;
             }
         }
-        System.out.println("El usuario no se encuentra.");
+
+        // 4. Creación según el rol y validación de regla de negocio
+        if (tipo == 1) {
+            // Contamos cuántos SuperAdmins hay actualmente
+            long totalSuperAdmins = users.stream().filter(u -> u instanceof SuperAdmin).count();
+            if (totalSuperAdmins >= 2) {
+                System.out.println("Error: Ya existen 2 Super Admins. No se pueden crear más.");
+                return false;
+            }
+            users.add(new SuperAdmin(username, password));
+
+        } else if (tipo == 2) {
+            users.add(new Admin(username, password));
+        } else {
+            users.add(new Recepcionista(username, password));
+        }
+
+        System.out.println("¡Usuario '" + username + "' registrado exitosamente!");
+        return true;
     }
 
-    // Eliminar usuarios
-    public void deleteUser(String username) {
-
-        int adminCount = 0;
-
-        // Contar cuántos administradores existen
-        for (User u: users) {
-            if (u.getRole().equals("ADMIN")) {
-                adminCount++;
-            }
-        }
-
-        for (User u: users) {
+    // ==========================================
+    // GESTIÓN DE CUENTAS
+    // ==========================================
+    public boolean eliminarUser(String username) {
+        for (User u : users) {
             if (u.getUsername().equals(username)) {
-
-                // Esto es para no eliminar al único administrador
-                if (u.getRole().equals("ADMIN") && adminCount == 1) {
-                    System.out.println("No se puede eliminar al único administrador");
-                    return;
+                // Bloqueo: No puedes eliminar a un SuperAdmin si es el único que queda
+                if (u instanceof SuperAdmin) {
+                    long totalSuperAdmins = users.stream().filter(user -> user instanceof SuperAdmin).count();
+                    if (totalSuperAdmins <= 1) {
+                        System.out.println("Error: No puedes eliminar la única cuenta Super Admin.");
+                        return false;
+                    }
                 }
+                users.remove(u);
+                System.out.println("Usuario '" + username + "' eliminado.");
+                return true;
             }
         }
-            System.out.println("El usuario no se encuentra.");
+        System.out.println("Error: El usuario no se encuentra.");
+        return false;
+    }
+
+    public void mostrarTodasLasCuentas() {
+        System.out.println("\n--- LISTA DE USUARIOS ---");
+        for (User u : users) {
+            String acceso = (u.getUltimoAcceso() != null) ? u.getUltimoAcceso().toString() : "Nunca ha iniciado sesión";
+            System.out.println("- " + u.getUsername() + " | Rol: " + u.getRole() + " | Último acceso: " + acceso);
         }
-
-    // Verificar el tipo de cuenta
-    public void checkRole(String username) {
-        for (User u: users) {
-
-            if (u.getUsername().equals(username)) {
-                System.out.println("Tipo de cuenta: " + u.getRole());
-                return;
-            }
-        }
-
-        System.out.println("El usuario no se encuentra.");
     }
 }
-
-

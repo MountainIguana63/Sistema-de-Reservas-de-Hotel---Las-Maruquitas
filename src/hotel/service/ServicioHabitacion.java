@@ -31,51 +31,45 @@ public class ServicioHabitacion {
         habitaciones = new ArrayList<>();//Se crea un ArrayList vacio donde se va a guardar las habitaciones
     }
 
-    public boolean registrarHabitacion(Habitacion habitacion) { //Nueva habitacion
-
-        for (Habitacion h : habitaciones) { //revisa cada habitacion que existe
-            if (h.getNumero() == habitacion.getNumero()) { //Revisa si ya existe alguna con el mismo numero
-                return false; // no se va a registrar
-            }
-        }
-
-        habitaciones.add(habitacion);
-        return true; // Si no existe la registra (agrega a la lista)
+    // Método para inyectar datos desde el JSON
+    public void setHabitaciones(List<Habitacion> habitacionesCargadas) {
+        this.habitaciones = habitacionesCargadas;
     }
 
-    public List<Habitacion> obtenerHabitaciones() { // Muestra las habitaciones registradas
+    public List<Habitacion> obtenerHabitaciones() {
         return habitaciones;
     }
 
-    public boolean eliminarHabitacion(int numero) { //Elimina habitaciones
-
+    // HU-01: Registrar habitación validando duplicados
+    public boolean registrarHabitacion(Habitacion habitacion) {
         for (Habitacion h : habitaciones) {
-
-            if (h.getNumero() == numero) { //Busca la habitacion por su numero
-
-                if (!h.isDisponible()) {
-                    return false; // no se puede eliminar si está ocupada
-                }
-
-                habitaciones.remove(h);
-                return true; // si esta disponible se elimina
+            if (h.getNumero() == habitacion.getNumero()) {
+                System.out.println("Error: Ya existe una habitación registrada con el número " + habitacion.getNumero());
+                return false;
             }
         }
-
-        return false; // si no se encuentra la habitacion
+        habitaciones.add(habitacion);
+        System.out.println("¡Habitación " + habitacion.getNumero() + " registrada con éxito!");
+        return true;
     }
 
-    public List<Habitacion> obtenerHabitacionesDisponibles() { //Muestra las habitaciones disponibles
-
-        List<Habitacion> disponibles = new ArrayList<>();//Lista donde guardan las habitaciones disponibles (temporalmente)
-
-        for (Habitacion h : habitaciones) { //recorre las habitaciones registradas
-            if (h.isDisponible()) { // verifica si esta disponible
-                disponibles.add(h); // si esta disponible la agrega a la lista de disponibles
-            }
+    // Eliminar habitación del inventario
+    public boolean eliminarHabitacion(int numero) {
+        // Usamos removeIf (una función Lambda de Java) que busca y elimina en una sola línea
+        boolean removido = habitaciones.removeIf(h -> h.getNumero() == numero);
+        if (removido) {
+            System.out.println("Habitación " + numero + " eliminada del sistema.");
+        } else {
+            System.out.println("Error: No se encontró la habitación " + numero);
         }
+        return removido;
+    }
 
-        return disponibles; // devuelve la lista de habitaciones DISPONIBLES
+    public Habitacion buscarHabitacion(int numero) {
+        for(Habitacion h : habitaciones){
+            if(h.getNumero() == numero) return h;
+        }
+        return null;
     }
 }
 
