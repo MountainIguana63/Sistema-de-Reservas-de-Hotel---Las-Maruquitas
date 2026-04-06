@@ -121,5 +121,7 @@ public class ServicioHuesped {
         }
 
     }
-
+     public List<Huesped> getListaHuesped() {
+        return ListaHuesped;
+    }
 }
