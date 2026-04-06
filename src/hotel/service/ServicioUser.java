@@ -46,7 +46,7 @@ public class ServicioUser {
             if (u.getUsername().equals(username)) {
 
                 // Verificar que la contraseña sea correcta
-                if (u.getUsername().equals(password)) {
+                if (u.getPassword().equals(password)) {
                     System.out.println("Se ha registrado correctamente.");
                     return u;
                 } else {
