@@ -42,40 +42,60 @@ public class ServicioReservas {
         System.out.println("Reserva guardada con exito por $" + precioTotal);
     }
 
-    //Metodo para revisar disponibilidad
+    // Metodo para revisar disponibilidad
+    public void listarDisponibles(List<Habitacion> todasLasHabitaciones, LocalDate inicio, LocalDate fin) {
+        System.out.println("\n--- BUSCANDO DISPONIBILIDAD: " + inicio + " al " + fin + " ---");
+        boolean hayDisponibles= false;
+
+        for (Habitacion hab: todasLasHabitaciones){
+            if (estaDisponible(hab, inicio, fin)){
+                System.out.println("- Habitación #" + hab.getNumero() + " (" + hab.getClass().getSimpleName() + ")");
+                hayDisponibles = true;
+            }
+        }
+
+        if (!hayDisponibles){
+            System.out.println("Lo sentimos, no hay habitaciones libres para esas fechas");
+        }
+    }
+
+    // Logica de validación (interna)
     private boolean estaDisponible(Habitacion hab, LocalDate inicio, LocalDate fin) {
-        for (Reserva r: listaDeReservas) {
-            // Si es la misma habitación Y la reserva esta ACTIVA
+        for (Reserva r : listaDeReservas){
             if (r.getHabitacion().getNumero() == hab.getNumero() && r.getEstado() == EstadoReserva.ACTIVA) {
-                // Logica de choque de fechas
                 if (inicio.isBefore(r.getFechaSalida()) && fin.isAfter(r.getFechaEntrada())) {
-                    return false; // Esta ocupada
+                    return false;
                 }
             }
         }
-        return true; // Esta libre
+        return true;
     }
 
-    // Metodo para cancelar (cambiar estado, no eliminar)
+    // Cancelar reserva
     public void cancelarReserva(int idReserva){
-        for (Reserva r: listaDeReservas){
-            if (r.getId() == idReserva) {
-                r.setEstado(EstadoReserva.CANCELADA); // Cambiamos el Enum
-                System.out.println("Reserva #" + idReserva + " ha sido cancelada");
+        for (Reserva r : listaDeReservas){
+            if (r.getId() == idReserva){
+                r.setEstado(EstadoReserva.CANCELADA);
+                System.out.println("La reserva #" + idReserva + " ahora figura como CANCELADA.");
                 return;
             }
         }
-        System.out.println("No se encontro la reserva.");
+        System.out.println("No se encontró ninguna reserva con ese ID.");
     }
 
-    // Metodo para mostrar en pantalla todas las reservas que existen en el sistema
     public void imprimirTodasLasReservas(){
         if (listaDeReservas.isEmpty()){
-            System.out.println("No hay reservas registradas.");
+            System.out.println("No hay historial de reservas.");
         } else {
             for (Reserva r : listaDeReservas) {
                 System.out.println(r.toString());
             }
         }
+    }
+
+    // Metodo requerido para gestor de archivos
+    //Permite obtener la lista de reservas para que el GestorArchivos pueda guardarlas en el archivo de texto
+    public List<Reserva> getListaDeReservas() {
+        return listaDeReservas;
     }
 }
