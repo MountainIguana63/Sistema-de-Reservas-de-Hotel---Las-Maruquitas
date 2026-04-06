@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "id": 2,
+    "nombres": "Pepe",
+    "apellidos": "xd",
+    "dui": "01234567-8",
+    "email": "pepe@gmail.com",
+    "telefono": "77665544+",
+    "esMenor": false,
+    "duiResponsable": "N/A",
+    "HabitacionesReservadas": []
+  },
+  {
+    "id": 3,
+    "nombres": "Pepe",
+    "apellidos": "jr",
+    "dui": "01234567-8-Pepe",
+    "email": "No requerido (Menor)",
+    "telefono": "No requerido (Menor)",
+    "esMenor": true,
+    "duiResponsable": "01234567-8",
+    "HabitacionesReservadas": []
+  }
+]

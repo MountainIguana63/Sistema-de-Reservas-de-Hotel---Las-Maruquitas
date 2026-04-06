@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Main {
+public class main {
 
     // Instanciamos los servicios y herramientas globalmente para que todos los métodos los vean
     private static final Scanner scanner = new Scanner(System.in);
@@ -32,7 +32,7 @@ public class Main {
         boolean ejecutando = true;
         while (ejecutando) {
             System.out.println("\n=======================================");
-            System.out.println("   Sistema super pro de registro de hotel  ");
+            System.out.println(" Sistema super pro de registro de hotel ");
             System.out.println("=======================================");
             System.out.println("1. Iniciar Sesión");
             System.out.println("2. Salir del Sistema");
@@ -167,28 +167,133 @@ public class Main {
 
     private static void registrarHuesped() {
         System.out.println("\n--- REGISTRO DE HUÉSPED ---");
-        System.out.print("Nombres: ");
-        String nombres = scanner.nextLine();
-        System.out.print("Apellidos: ");
-        String apellidos = scanner.nextLine();
-        System.out.print("DUI (Ej. 01234567-8): ");
-        String dui = scanner.nextLine();
 
-        System.out.print("¿Es menor de edad? (s/n): ");
-        String esMenor = scanner.nextLine();
+        String nombres;
+        do {
+            System.out.print("Nombres: ");
+            nombres = scanner.nextLine();
+            if (nombres.isEmpty()) {
+                System.out.println("❌ Error: No puede dejarlo vacío.");
+            }
+        } while (nombres.isEmpty());
 
+        String apellidos;
+        do {
+            System.out.print("Apellidos: ");
+            apellidos = scanner.nextLine();
+            if (apellidos.isEmpty()) {
+                System.out.println("❌ Error: No puede dejarlo vacío.");
+            }
+        } while (apellidos.isEmpty());
+
+        String esMenor;
+        do {
+            System.out.print("¿Es menor de edad? (s/n): ");
+            esMenor = scanner.nextLine();
+            if (!esMenor.equalsIgnoreCase("s") && !esMenor.equalsIgnoreCase("n")) {
+                System.out.println("❌ Error: Solo escriba 's' para Sí, o 'n' para No.");
+            }
+        } while (!esMenor.equalsIgnoreCase("s") && !esMenor.equalsIgnoreCase("n"));
+
+        // ==========================================
+        // SI ES MENOR DE EDAD
+        // ==========================================
         if (esMenor.equalsIgnoreCase("s")) {
-            System.out.print("DUI del Responsable/Tutor: ");
-            String duiResponsable = scanner.nextLine();
-            Huesped h = new Huesped(nombres, apellidos, dui, duiResponsable);
+            String duiResponsable;
+            Huesped responsable = null;
+            boolean adultoValido = false;
+
+            do {
+                System.out.print("DUI del Responsable/Tutor (o escriba 'cancelar'): ");
+                duiResponsable = scanner.nextLine();
+
+                if (duiResponsable.equalsIgnoreCase("cancelar")) {
+                    System.out.println("Volviendo al menú...");
+                    return;
+                }
+
+                // Validación manual sin Regex (solo que mida 10 caracteres y tenga guion)
+                if (duiResponsable.length() == 10 && duiResponsable.contains("-")) {
+                    responsable = servicioHuesped.buscarPorDui(duiResponsable);
+
+                    if (responsable == null) {
+                        System.out.println("❌ Error: No existe ese adulto en el sistema.");
+                    } else if (responsable.isEsMenor()) {
+                        System.out.println("❌ Error: Ese DUI es de otro niño. Ingrese el de un adulto.");
+                    } else {
+                        adultoValido = true; // Todo está perfecto
+                    }
+                } else {
+                    System.out.println("❌ Error: El DUI debe tener 10 caracteres y un guion (Ej. 01234567-8).");
+                }
+            } while (!adultoValido);
+
+            // Generar ID del niño
+            String primerNombre = nombres.split(" ")[0];
+            String idMenorAsociado = duiResponsable + "-" + primerNombre;
+
+            Huesped h = new Huesped(nombres, apellidos, idMenorAsociado, duiResponsable);
             servicioHuesped.registrarHuesped(h);
+
+            guardarDatos(); // <--- Aquí guardamos los datos del menor
+
+            System.out.println("✅ Menor registrado y vinculado a: " + responsable.getNombres());
+
+            // ==========================================
+            // SI ES MAYOR DE EDAD
+            // ==========================================
         } else {
-            System.out.print("Email: ");
-            String email = scanner.nextLine();
-            System.out.print("Teléfono: ");
-            String telefono = scanner.nextLine();
+            String dui;
+            boolean duiValido = false;
+            do {
+                System.out.print("DUI (Ej. 01234567-8): ");
+                dui = scanner.nextLine();
+
+                if (dui.length() == 10 && dui.contains("-")) {
+                    if (servicioHuesped.buscarPorDui(dui) != null) {
+                        System.out.println("❌ Error: Ese DUI ya está registrado en el hotel.");
+                    } else {
+                        duiValido = true;
+                    }
+                } else {
+                    System.out.println("❌ Error: El DUI debe tener 10 caracteres y un guion.");
+                }
+            } while (!duiValido);
+
+            String email;
+            do {
+                System.out.print("Email (Ej. maruquita@gmail.com): ");
+                email = scanner.nextLine();
+                // Validación manual básica: que tenga un arroba y un punto
+                if (!email.contains("@") || !email.contains(".")) {
+                    System.out.println("❌ Error: El correo debe tener un '@' y un punto.");
+                }
+            } while (!email.contains("@") || !email.contains("."));
+
+            String telefono;
+            boolean telValido = false;
+            do {
+                System.out.print("Teléfono (Ej. 7123-4567): ");
+                telefono = scanner.nextLine();
+
+                // Validación manual: que mida 9 caracteres, tenga guion y empiece con números válidos
+                if (telefono.length() == 9 && telefono.contains("-")) {
+                    if (telefono.startsWith("2") || telefono.startsWith("6") || telefono.startsWith("7")) {
+                        telValido = true;
+                    } else {
+                        System.out.println("❌ Error: El número debe empezar con 2, 6 o 7.");
+                    }
+                } else {
+                    System.out.println("❌ Error: El teléfono debe tener 9 caracteres y un guion.");
+                }
+            } while (!telValido);
+
             Huesped h = new Huesped(nombres, apellidos, dui, email, telefono);
             servicioHuesped.registrarHuesped(h);
+
+            guardarDatos();
+
+            System.out.println("✅ Huésped adulto registrado exitosamente."); // <--- Mensaje corregido
         }
     }
 
@@ -263,8 +368,13 @@ public class Main {
                 }
             }
 
-            // Ejecutamos la lógica del servicio
-            servicioReservas.crearReserva(titular, hab, entrada, salida, acompanantes);
+                // Ejecutamos la lógica del servicio
+            boolean exito = servicioReservas.crearReserva(titular, hab, entrada, salida, acompanantes);
+
+
+            if (exito) {
+                guardarDatos();
+            }
 
         } catch (Exception e) {
             System.out.println("❌ Error en los datos ingresados: " + e.getMessage());
@@ -275,7 +385,12 @@ public class Main {
         System.out.print("\nIngrese el ID de la reserva a cancelar: ");
         try {
             int id = Integer.parseInt(scanner.nextLine());
-            servicioReservas.cancelarReserva(id);
+            boolean exito = servicioReservas.cancelarReserva(id);
+
+
+            if (exito) {
+                guardarDatos();
+            }
         } catch (NumberFormatException e) {
             System.out.println("❌ ID inválido.");
         }
@@ -308,13 +423,23 @@ public class Main {
                     String cPass = scanner.nextLine();
                     System.out.println("Roles: 1(SuperAdmin) | 2(Admin) | 3(Recepcionista)");
                     System.out.print("Tipo: ");
-                    int tipo = Integer.parseInt(scanner.nextLine());
-                    servicioUser.registrarUsuario(nUser, nPass, cPass, tipo);
+                    try {
+                        int tipo = Integer.parseInt(scanner.nextLine());
+                        // Si el registro fue exitoso (retorna true), entonces guardamos
+                        if (servicioUser.registrarUsuario(nUser, nPass, cPass, tipo)) {
+                            guardarDatos(); // <--- Auto-guardado aquí
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("❌ Error: Ingrese un número válido para el rol.");
+                    }
                     break;
                 case "3":
                     System.out.print("Username a eliminar: ");
                     String delUser = scanner.nextLine();
-                    servicioUser.eliminarUser(delUser);
+                    // Si la eliminación fue exitosa (retorna true), entonces guardamos
+                    if (servicioUser.eliminarUser(delUser)) {
+                        guardarDatos(); // <--- Auto-guardado aquí
+                    }
                     break;
                 case "0":
                     enMenu = false;
@@ -350,6 +475,7 @@ public class Main {
                 System.out.print("¿Tiene minibar? (true/false): ");
                 boolean m = Boolean.parseBoolean(scanner.nextLine());
                 servicioHabitacion.registrarHabitacion(new Suite(numero, precio, true, j, b, m, cap));
+                guardarDatos();
             }
         } catch (Exception e) {
             System.out.println("❌ Error al ingresar los datos.");
@@ -361,6 +487,7 @@ public class Main {
         try {
             int num = Integer.parseInt(scanner.nextLine());
             servicioHabitacion.eliminarHabitacion(num);
+            guardarDatos(); // <--- Auto-guardado aquí
         } catch (NumberFormatException e) {
             System.out.println("❌ Número inválido.");
         }
@@ -370,5 +497,6 @@ public class Main {
         System.out.print("DUI del huésped a eliminar: ");
         String dui = scanner.nextLine();
         servicioHuesped.eliminarHuesped(dui);
+        guardarDatos(); // <--- Auto-guardado aquí
     }
 }
