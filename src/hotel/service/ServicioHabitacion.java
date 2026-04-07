@@ -5,7 +5,7 @@ En esta clase se maneja toda la lógica relacionada con
  - Registrar habitaciones
  - Consultarlas
  - Eliminarlas
- - Ver cuáles están disponibles
+ - lista general
 */
 import hotel.model.Habitacion;
 /*

@@ -276,7 +276,7 @@ public class main {
                 System.out.print("Teléfono (Ej. 7123-4567): ");
                 telefono = scanner.nextLine();
 
-                // Validación manual: que mida 9 caracteres, tenga guion y empiece con números válidos
+
                 if (telefono.length() == 9 && telefono.contains("-")) {
                     if (telefono.startsWith("2") || telefono.startsWith("6") || telefono.startsWith("7")) {
                         telValido = true;

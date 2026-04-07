@@ -1,9 +1,30 @@
 [
   {
-    "id": 0,
-    "fechaEntrada": "2026-04-10T14:00:00",
-    "fechaSalida": "2026-04-15T12:00:00",
-    "costoTotal": 250.0,
-    "estado": "ACTIVA"
+    "id": 1,
+    "titular": {
+      "id": 2,
+      "nombres": "Pepe",
+      "apellidos": "xd",
+      "dui": "01234567-8",
+      "email": "pepe@gmail.com",
+      "telefono": "77665544+",
+      "esMenor": false,
+      "duiResponsable": "N/A",
+      "HabitacionesReservadas": [
+        "4"
+      ]
+    },
+    "acompanantes": [],
+    "habitacion": {
+      "numero": 4,
+      "precio": 300.0,
+      "disponible": true,
+      "capacidadPersonas": 2,
+      "type": "HabitacionEstandar"
+    },
+    "fechaEntrada": "2026-06-25T20:30:00",
+    "fechaSalida": "2026-08-27T20:30:00",
+    "costoTotal": 18900.0,
+    "estado": "CANCELADA"
   }
 ]

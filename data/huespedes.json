@@ -8,7 +8,9 @@
     "telefono": "77665544+",
     "esMenor": false,
     "duiResponsable": "N/A",
-    "HabitacionesReservadas": []
+    "HabitacionesReservadas": [
+      "4"
+    ]
   },
   {
     "id": 3,
@@ -19,6 +21,17 @@
     "telefono": "No requerido (Menor)",
     "esMenor": true,
     "duiResponsable": "01234567-8",
+    "HabitacionesReservadas": []
+  },
+  {
+    "id": 4,
+    "nombres": "Juan",
+    "apellidos": "Perez",
+    "dui": "23465143-9",
+    "email": "juan@icloud.com",
+    "telefono": "2211-2222",
+    "esMenor": false,
+    "duiResponsable": "N/A",
     "HabitacionesReservadas": []
   }
 ]
